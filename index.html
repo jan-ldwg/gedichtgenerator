@@ -178,6 +178,58 @@
         outline-offset: 3px;
       }
 
+      /* Teilen */
+      body {
+        padding-top: 4.5rem;
+      }
+      .share {
+        position: fixed;
+        top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+        right: 0.75rem;
+        z-index: 900;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 1rem;
+        font-size: 1rem;
+        background: var(--paper);
+        color: var(--accent);
+        border: 2px solid var(--accent);
+        box-shadow: 0 4px 0 rgba(90, 10, 50, 0.25);
+      }
+      .share svg {
+        width: 1.1em;
+        height: 1.1em;
+      }
+      .share:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+        z-index: 1100;
+        max-width: calc(100% - 2rem);
+        padding: 0.6rem 1.1rem;
+        border-radius: 999px;
+        background: var(--ink);
+        color: var(--paper);
+        font-weight: 700;
+        text-align: center;
+        pointer-events: none;
+        opacity: 0;
+        transform: translate(-50%, 1rem);
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
       /* Glitzerspur */
       .sparkle {
         position: fixed;
@@ -245,6 +297,24 @@
     </div>
     <button id="button">Neues Gedicht ♥</button>
 
+    <button id="share" class="share" disabled aria-label="Gedicht teilen">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 15V3" />
+        <path d="M7.5 7.5 12 3l4.5 4.5" />
+        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+      </svg>
+      Teilen
+    </button>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
     <script>
       const firstLineTokens = [
         [
@@ -292,7 +362,7 @@
           "go with grace",
           "have to haunt you",
           "kill you just the same",
-          "stayed",
+          "stay",
           "stay in that lavender haze",
           "need you",
         ],
@@ -305,33 +375,135 @@
       ];
 
       /* --------------------------- Gedicht --------------------------- */
+      /* Wo die Zufallszahlen in der URL stehen:
+         "hash"  -> #g-0-2-1-...  (funktioniert auch auf der gehosteten Artifact-Seite)
+         "query" -> ?g=0-2-1-...  (für eigenes Hosting, z. B. GitHub Pages) */
+      const STATE_IN = "hash";
+
+      const lineSets = [firstLineTokens, secondLineTokens, thirdLineTokens];
+      const allGroups = lineSets.flat();
+      const lineEl = document.getElementById("line");
+      const shareBtn = document.getElementById("share");
+      const toastEl = document.getElementById("toast");
+
       document.getElementById("button").addEventListener("click", displayPoem);
+      shareBtn.addEventListener("click", sharePoem);
+      window.addEventListener("hashchange", showFromUrl);
 
-      function getRandomToken(tokenArray) {
-        return tokenArray[Math.floor(Math.random() * tokenArray.length)];
+      // Eine Zufallszahl pro Token-Gruppe, in der Reihenfolge aller Gruppen.
+      function randomIndices() {
+        return allGroups.map((group) =>
+          Math.floor(Math.random() * group.length),
+        );
       }
 
-      function getLine(lineTokens) {
-        let result = [];
-        for (const tokenGroup of lineTokens) {
-          result.push(getRandomToken(tokenGroup));
+      function poemFromIndices(indices) {
+        let k = 0;
+        return lineSets
+          .map((set) => set.map((group) => group[indices[k++]]).join(" "))
+          .join("\n");
+      }
+
+      function readIndices() {
+        let code = "";
+        if (STATE_IN === "query") {
+          code = new URLSearchParams(location.search).get("g") || "";
+        } else if (location.hash.startsWith("#g-")) {
+          code = location.hash.slice(3);
         }
-        return result.join(" ");
+        if (!code) return null;
+        const parts = code.split("-").map(Number);
+        const valid =
+          parts.length === allGroups.length &&
+          parts.every(
+            (n, i) => Number.isInteger(n) && n >= 0 && n < allGroups[i].length,
+          );
+        return valid ? parts : null;
       }
 
-      function generatePoem() {
-        const firstLine = getLine(firstLineTokens);
-        const secondLine = getLine(secondLineTokens);
-        const thirdLine = getLine(thirdLineTokens);
-        return [firstLine, secondLine, thirdLine].join("\n");
+      function writeIndices(indices) {
+        const code = indices.join("-");
+        if (STATE_IN === "query") {
+          const url = new URL(location.href);
+          url.searchParams.set("g", code);
+          history.replaceState(null, "", url);
+        } else {
+          location.hash = "g-" + code;
+        }
+      }
+
+      function showPoem(indices) {
+        lineEl.classList.remove("empty");
+        lineEl.textContent = poemFromIndices(indices);
+        shareBtn.disabled = false;
+      }
+
+      function showFromUrl() {
+        const indices = readIndices();
+        if (indices) showPoem(indices);
       }
 
       function displayPoem(event) {
-        const line = document.getElementById("line");
-        line.classList.remove("empty");
-        line.textContent = generatePoem();
+        const indices = randomIndices();
+        showPoem(indices);
+        writeIndices(indices);
         sprayHearts(event.currentTarget);
       }
+
+      /* --------------------------- Teilen ---------------------------- */
+      let toastTimer;
+      function toast(message) {
+        toastEl.textContent = message;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+      }
+
+      async function copyText(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (e) {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          let ok = false;
+          try {
+            ok = document.execCommand("copy");
+          } catch (err) {
+            ok = false;
+          }
+          ta.remove();
+          return ok;
+        }
+      }
+
+      async function sharePoem() {
+        const url = location.href;
+        const isTouch = window.matchMedia("(pointer: coarse)").matches;
+        // Auf dem Handy: das Teilen-Menü des Betriebssystems.
+        if (isTouch && navigator.share) {
+          try {
+            await navigator.share({ title: "Gedichtgenerator", url });
+            return;
+          } catch (e) {
+            if (e.name === "AbortError") return;
+          }
+        }
+        // Sonst (oder als Fallback): Link kopieren.
+        const ok = await copyText(url);
+        toast(
+          ok
+            ? "Link kopiert ♥"
+            : "Kopieren nicht möglich – bitte die Adresszeile nutzen",
+        );
+      }
+
+      // Beim Laden: Gedicht aus der URL anzeigen, falls vorhanden.
+      showFromUrl();
 
       /* ------------------------- Effekte --------------------------- */
       const reduceMotion = window.matchMedia(
