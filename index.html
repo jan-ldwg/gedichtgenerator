@@ -170,26 +170,83 @@
     <button id="button">Neues Gedicht</button>
 
     <script>
-      const tokens = [
-        ["Ich liebe", "Ich hasse", "Ich mag nicht"],
-        ["Thunfisch", "Tomaten", "Gurken"],
+      const firstLineTokens = [
+        [
+          "Take me to",
+          "I’ve come too far to watch",
+          "I want",
+          "I got cursed like",
+          "No sign of",
+          "They want",
+          "I made wishes to",
+          "You remind me of",
+          "I protect",
+          "I can make",
+          "I hate",
+          "I dream of",
+          "I choose",
+        ],
+        [
+          "the lakes where all the poets went to die",
+          "a basketball hoop",
+          "you right here",
+          "an Oscar on the bathroom floor",
+          "soulmates",
+          "that complex female character",
+          "those three dogs that they call their kids",
+          "a younger me",
+          "the family",
+          "deals with the devil, because my dick’s bigger",
+          "you",
+          "your love",
+          "you and me",
+        ],
+      ];
+
+      const secondLineTokens = [
+        [
+          "I didn’t have it in myself to",
+          "You know I didn’t want to",
+          "You had to kill me, but I",
+          "Cursing my name, wishing I’d",
+          "I just want to",
+          "I just ",
+        ],
+        [
+          "go with grace",
+          "have to haunt you",
+          "kill you just the same",
+          "stayed",
+          "stay in that lavender haze",
+          "need you",
+        ],
+      ];
+
+      const thirdLineTokens = [
+        ["There is", "Don’t blame", "My name is", "Every single hot take is"],
+        ["trouble", "me", "whatever", "cold"],
+        ["in paradise", "now", "you decide", "now"],
       ];
 
       document.getElementById("button").addEventListener("click", displayPoem);
 
-      function generateLine() {
-        const x = Math.floor(Math.random() * tokens[0].length);
-        const y = Math.floor(Math.random() * tokens[1].length);
-        const elements = [tokens[0][x], tokens[1][y]];
-        return elements.join(" ");
+      function getRandomToken(tokenArray) {
+        return tokenArray[Math.floor(Math.random() * tokenArray.length)];
       }
 
-      function generatePoem(lineCount) {
+      function getLine(lineTokens) {
         let result = [];
-        for (let i = 0; i < lineCount; i++) {
-          result.push(generateLine());
+        for (const tokenGroup of lineTokens) {
+          result.push(getRandomToken(tokenGroup));
         }
-        return result.join("\n");
+        return result.join(" ");
+      }
+
+      function generatePoem() {
+        const firstLine = getLine(firstLineTokens);
+        const secondLine = getLine(secondLineTokens);
+        const thirdLine = getLine(thirdLineTokens);
+        return [firstLine, secondLine, thirdLine].join("\n");
       }
 
       function displayPoem() {
