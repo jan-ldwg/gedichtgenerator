@@ -15,46 +15,50 @@
     />
     <link
       rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍅</text></svg>"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💖</text></svg>"
     />
     <style>
       :root {
-        --bg: #e4ecd2;
-        --paper: #fffdf6;
-        --ink: #2b2a26;
-        --rule: #b9d3e6;
-        --margin: #e9a09a;
-        --accent: #d63f2b;
-        --accent-ink: #fffdf6;
-        --muted: #6b7060;
-        --shadow: rgba(60, 70, 30, 0.22);
+        --bg1: #ffd6e8;
+        --bg2: #ffeef6;
+        --paper: #fffafc;
+        --ink: #4a1d36;
+        --rule: #f8c4da;
+        --margin: #ee7fb0;
+        --accent: #e0136f;
+        --accent-ink: #ffffff;
+        --muted: #a0668483;
+        --muted: #9a5d7a;
+        --shadow: rgba(190, 40, 110, 0.3);
         box-sizing: border-box;
         padding-top: env(safe-area-inset-top, 0px);
         padding-bottom: env(safe-area-inset-bottom, 0px);
       }
       @media (prefers-color-scheme: dark) {
         :root:not([data-theme="light"]) {
-          --bg: #1d2418;
-          --paper: #2a2d24;
-          --ink: #f1ecdc;
-          --rule: #3d4a56;
-          --margin: #8a4a46;
-          --accent: #ef6a54;
-          --accent-ink: #1d1a14;
-          --muted: #a4a995;
-          --shadow: rgba(0, 0, 0, 0.5);
+          --bg1: #3a1230;
+          --bg2: #1f0c1b;
+          --paper: #3a2234;
+          --ink: #ffe8f3;
+          --rule: #5a3652;
+          --margin: #b04a82;
+          --accent: #ff4fa3;
+          --accent-ink: #2a0b1d;
+          --muted: #d49bb9;
+          --shadow: rgba(0, 0, 0, 0.55);
         }
       }
       :root[data-theme="dark"] {
-        --bg: #1d2418;
-        --paper: #2a2d24;
-        --ink: #f1ecdc;
-        --rule: #3d4a56;
-        --margin: #8a4a46;
-        --accent: #ef6a54;
-        --accent-ink: #1d1a14;
-        --muted: #a4a995;
-        --shadow: rgba(0, 0, 0, 0.5);
+        --bg1: #3a1230;
+        --bg2: #1f0c1b;
+        --paper: #3a2234;
+        --ink: #ffe8f3;
+        --rule: #5a3652;
+        --margin: #b04a82;
+        --accent: #ff4fa3;
+        --accent-ink: #2a0b1d;
+        --muted: #d49bb9;
+        --shadow: rgba(0, 0, 0, 0.55);
       }
       html {
         scroll-padding-top: env(safe-area-inset-top, 0px);
@@ -73,7 +77,8 @@
         justify-content: center;
         gap: 2rem;
         padding: 2rem 1.25rem;
-        background: var(--bg);
+        background: var(--bg2)
+          radial-gradient(circle at 50% 0%, var(--bg1), var(--bg2) 75%) fixed;
         color: var(--ink);
         font-family:
           "Bricolage Grotesque",
@@ -81,6 +86,7 @@
           -apple-system,
           "Segoe UI",
           sans-serif;
+        overflow-x: hidden;
       }
       h1 {
         margin: 0;
@@ -88,6 +94,17 @@
         font-weight: 800;
         letter-spacing: -0.02em;
         text-align: center;
+        background: linear-gradient(
+          100deg,
+          #ff2d8a 0%,
+          #ff8fc4 35%,
+          #c2186f 70%,
+          #ff5fa8 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
       }
       .paper {
         width: min(100%, 26rem);
@@ -122,7 +139,7 @@
         font-size: 1.9rem;
         font-weight: 700;
         line-height: 2.2rem;
-        white-space: pre-line; /* macht aus \n echte Zeilenumbrüche */
+        white-space: pre-line;
         overflow-wrap: anywhere;
       }
       #line.empty {
@@ -130,16 +147,21 @@
         font-weight: 500;
       }
       button {
+        position: relative;
         font: inherit;
         font-size: 1.15rem;
         font-weight: 700;
         padding: 0.8rem 1.8rem;
         border: 0;
         border-radius: 999px;
-        background: var(--accent);
+        background: linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent) 80%, white),
+          var(--accent)
+        );
         color: var(--accent-ink);
         cursor: pointer;
-        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.22);
+        box-shadow: 0 6px 0 rgba(90, 10, 50, 0.35);
         transition:
           transform 0.1s,
           box-shadow 0.1s;
@@ -149,15 +171,69 @@
       }
       button:active {
         transform: translateY(4px);
-        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.22);
+        box-shadow: 0 2px 0 rgba(90, 10, 50, 0.35);
       }
       button:focus-visible {
         outline: 3px solid var(--ink);
         outline-offset: 3px;
       }
+
+      /* Glitzerspur */
+      .sparkle {
+        position: fixed;
+        z-index: 1000;
+        pointer-events: none;
+        line-height: 1;
+        transform: translate(-50%, -50%);
+        text-shadow: 0 0 6px currentColor;
+        animation: sparkle 0.9s ease-out forwards;
+      }
+      @keyframes sparkle {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+        }
+        30% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1.1) rotate(60deg);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+            scale(0.2) rotate(180deg);
+        }
+      }
+
+      /* Herzen */
+      .heart {
+        position: fixed;
+        z-index: 1000;
+        pointer-events: none;
+        line-height: 1;
+        transform: translate(-50%, -50%);
+        animation: heart 1.2s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+      }
+      @keyframes heart {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+        }
+        15% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty)))
+            scale(1) rotate(var(--rot));
+        }
+      }
       @media (prefers-reduced-motion: reduce) {
         button {
           transition: none;
+        }
+        .sparkle,
+        .heart {
+          display: none;
         }
       }
     </style>
@@ -167,7 +243,7 @@
     <div class="paper">
       <p id="line" class="empty" aria-live="polite">Drück auf den Knopf …</p>
     </div>
-    <button id="button">Neues Gedicht</button>
+    <button id="button">Neues Gedicht ♥</button>
 
     <script>
       const firstLineTokens = [
@@ -228,6 +304,7 @@
         ["in paradise", "now", "you decide", "now"],
       ];
 
+      /* --------------------------- Gedicht --------------------------- */
       document.getElementById("button").addEventListener("click", displayPoem);
 
       function getRandomToken(tokenArray) {
@@ -249,10 +326,74 @@
         return [firstLine, secondLine, thirdLine].join("\n");
       }
 
-      function displayPoem() {
+      function displayPoem(event) {
         const line = document.getElementById("line");
         line.classList.remove("empty");
-        line.textContent = generatePoem(3);
+        line.textContent = generatePoem();
+        sprayHearts(event.currentTarget);
+      }
+
+      /* ------------------------- Effekte --------------------------- */
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      );
+      const glitterColors = [
+        "#ff2d8a",
+        "#ff8fc4",
+        "#ffd166",
+        "#ffffff",
+        "#ff5fa8",
+        "#f7b6ff",
+      ];
+      const sparkleShapes = ["✦", "✧", "★", "✨"];
+      const heartShapes = ["♥", "💖", "💗", "💕"];
+      const rand = (min, max) => min + Math.random() * (max - min);
+      const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+      function spawn(el) {
+        document.body.appendChild(el);
+        el.addEventListener("animationend", () => el.remove());
+      }
+
+      let lastSparkle = 0;
+      window.addEventListener("pointermove", (e) => {
+        if (reduceMotion.matches) return;
+        const now = performance.now();
+        if (now - lastSparkle < 28) return;
+        lastSparkle = now;
+        const s = document.createElement("span");
+        s.className = "sparkle";
+        s.textContent = pick(sparkleShapes);
+        s.style.left = e.clientX + rand(-6, 6) + "px";
+        s.style.top = e.clientY + rand(-6, 6) + "px";
+        s.style.fontSize = rand(10, 22) + "px";
+        s.style.color = pick(glitterColors);
+        s.style.setProperty("--dx", rand(-18, 18) + "px");
+        s.style.setProperty("--dy", rand(10, 40) + "px");
+        spawn(s);
+      });
+
+      function sprayHearts(button) {
+        if (reduceMotion.matches) return;
+        const rect = button.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        for (let i = 0; i < 22; i++) {
+          const h = document.createElement("span");
+          h.className = "heart";
+          h.textContent = pick(heartShapes);
+          const angle = rand(-165, -15) * (Math.PI / 180);
+          const dist = rand(90, 240);
+          h.style.left = cx + rand(-rect.width / 3, rect.width / 3) + "px";
+          h.style.top = cy + "px";
+          h.style.fontSize = rand(16, 34) + "px";
+          h.style.color = pick(["#ff2d8a", "#ff5fa8", "#ff8fc4", "#e0136f"]);
+          h.style.setProperty("--tx", Math.cos(angle) * dist + "px");
+          h.style.setProperty("--ty", Math.sin(angle) * dist + "px");
+          h.style.setProperty("--rot", rand(-40, 40) + "deg");
+          h.style.animationDelay = rand(0, 0.15) + "s";
+          spawn(h);
+        }
       }
     </script>
   </body>
